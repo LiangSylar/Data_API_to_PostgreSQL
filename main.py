@@ -21,18 +21,13 @@ def to_string(data):
 def main():
     args = parser.parse_args()
     # Pricing levels to filter the search result with: 1 = $, 2 = $$, 3 = $$$, 4 = $$$$.
-    b = BusinessSearch(term=args.term, location=args.location, price=args.price)
+    b = BusinessSearch(term=args.term, location=args.location, price=args.price, limit=args.limit)
     db = DatabaseDriver()
-    db.setup() 
-    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['DATABASE'].values()))
-    cursor = conn.cursor()  
-    for result in b.get_results():
-        values = to_string(result)
-        cursor.execute(insert_business_table, values) 
-    
-    conn.commit()
-    conn.close()
-        
+    db.setup()   
+    for offset in range(0, args.total, args.limit):
+        for result in b.get_results(offset):
+            values = to_string(result) 
+            db.execute_upsert(values) 
 
 if __name__ == "__main__":
     parser._action_groups.pop()
@@ -44,5 +39,6 @@ if __name__ == "__main__":
                           help="This string indicates the geographic area to be used when searching for businesses. ")
     optional.add_argument("-p", "--price", type=int, metavar='', required=False, default=1,
                           help="Pricing levels to filter the search result with: 1 = $, 2 = $$, 3 = $$$, 4 = $$$$.")
-
+    optional.add_argument("--limit", type=int, required=False, default=20, help="limit of records retrieved by one request. ")
+    optional.add_argument("--total", type=int, required=False, default=100, help="Upper bound on how many records retrieved in main. ")
     main()

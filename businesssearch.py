@@ -4,18 +4,19 @@ from auth import headers
 import json
 
 class BusinessSearch:
-    def __init__(self, term, location, price=None):
-        self._param = {'term' : term, 'location' : location}
+    def __init__(self, term, location, price=None, limit = 20):
+        self._param = {'term' : term, 'location' : location, 'limit' : limit}
         if price:
             self._param['price'] = price
-        self._base_url = 'https://api.yelp.com/v3/businesses/search'
-        self._business_list = self._search_business()
+        self._base_url = 'https://api.yelp.com/v3/businesses/search' 
 
-    def _search_business(self):
+    def _search_business(self, offset): 
+        '''Search business starts after OFFSET number of records.'''
+        self._param['offset'] = offset
         response = Request.get_content(url=self._base_url, param=self._param) 
         return response['businesses'] if response is not None else []
 
-    def _parse_results(self, data):
+    def parse_results(self, data):
         # Categories data : 'categories': [{'alias': 'bakeries', 'title': 'Bakeries'}] 
         categories = ' '.join([category['title'] for category in data['categories']])
 
@@ -26,7 +27,7 @@ class BusinessSearch:
         # Location example : 'location': { 'display_address': ['316 Avenue du Mont-Royal E', 'Montreal, QC H2T 1P7', 'Canada']}
         location = ','.join(data['location']['display_address'])
 
-        return {"id" : data['id'], "name" : self._add_escape_character(data['name']), "image_url" : data['image_url'], "url" : data['url'],
+        return {"id" : data['id'], "name" : data['name'], "image_url" : data['image_url'], "url" : data['url'],
                 "review_count" : data['review_count'], "categories" : categories, "rating" : data['rating'],
                 "latitude" : latitude, "longitude" : longitude, "price" : data['price'], "location" : location,
                 "display_phone" : data['display_phone']
@@ -35,5 +36,6 @@ class BusinessSearch:
     def _add_escape_character(self, data):
         return data.replace("'", "''")
 
-    def get_results(self):
-        return [self._parse_results(business) for business in self._business_list]
+    def get_results(self, offset):  
+        business_list = self._search_business(offset) 
+        return [self.parse_results(business) for business in business_list]
