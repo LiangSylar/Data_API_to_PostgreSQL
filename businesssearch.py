@@ -12,11 +12,11 @@ class BusinessSearch:
         self._business_list = self._search_business()
 
     def _search_business(self):
-        business_search_request = Request.get_content(url=self._base_url, param=self._param)
-        return business_search_request['businesses'] if business_search_request is not None else []
+        response = Request.get_content(url=self._base_url, param=self._param) 
+        return response['businesses'] if response is not None else []
 
     def _parse_results(self, data):
-        # Categories data : 'categories': [{'alias': 'bakeries', 'title': 'Bakeries'}]
+        # Categories data : 'categories': [{'alias': 'bakeries', 'title': 'Bakeries'}] 
         categories = ' '.join([category['title'] for category in data['categories']])
 
         # Longitude and latitude data :  'coordinates': {'latitude': 45.5232, 'longitude': -73.583459}

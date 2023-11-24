@@ -16,8 +16,9 @@ CREATE TABLE IF NOT EXISTS yelp.business (
 	phone varchar
 );
 """
-
-insert_business_table = """INSERT INTO yelp.business VALUES ('{}', '{}', '{}', '{}', {}, '{}', {}, {}, {}, '{}', '{}', '{}')
+ 
+### cursor-based pagination 
+insert_business_table = """INSERT INTO yelp.business VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (business_id)
                         DO UPDATE SET
                         business_id = EXCLUDED.business_id,

@@ -4,6 +4,7 @@ from businesssearch import BusinessSearch
 from queries import create_business_schema, create_business_table, insert_business_table
 from databasedriver import DatabaseDriver
 import argparse
+import psycopg2
 
 config = configparser.ConfigParser()
 config.read_file(open(f"{Path(__file__).parents[0]}/config.cfg"))
@@ -22,11 +23,16 @@ def main():
     # Pricing levels to filter the search result with: 1 = $, 2 = $$, 3 = $$$, 4 = $$$$.
     b = BusinessSearch(term=args.term, location=args.location, price=args.price)
     db = DatabaseDriver()
-    db.setup()
-
-    queries = [insert_business_table.format(*to_string(result)) for result in b.get_results()]
-    query_to_execute = "BEGIN; \n" + '\n'.join(queries) + "\nCOMMIT;"
-    db.execute_query(query_to_execute)
+    db.setup() 
+    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['DATABASE'].values()))
+    cursor = conn.cursor()  
+    for result in b.get_results():
+        values = to_string(result)
+        cursor.execute(insert_business_table, values) 
+    
+    conn.commit()
+    conn.close()
+        
 
 if __name__ == "__main__":
     parser._action_groups.pop()
