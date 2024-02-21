@@ -31,11 +31,11 @@ queries.py - Contains queries to create schema and tables in postgres and insert
 
 request.py - Contains class to handle making request to the API
 
-driver.py - Entry point for the application, contains parsing command line arguments and control the program flow.
+main.py - Entry point for the application, contains parsing command line arguments and control the program flow.
 ```
 
 ## How to Run
-`python driver.py --term food --location Montreal --price 4` 
+`python main.py --term food --location Montreal --price 4` 
 
 
 ## Results
